@@ -9,7 +9,7 @@ export default function TodoPage() {
 
     const [newTodo, setNewTodo] = useState("")
     const {todos, loading} = useSelector((state: RootState) => state.todos);
-    
+
 
     const user = useSelector((state: RootState) => state.auth.user)
     const dispatch = useDispatch();
@@ -33,7 +33,7 @@ export default function TodoPage() {
 
     const handleAdd = () => {
         if(newTodo.trim()){
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 
             if (user) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 dispatch(addTodoToDB({text: newTodo, userId: user}) as any);
