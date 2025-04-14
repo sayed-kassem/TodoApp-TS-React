@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 
-interface Todo {
+export interface Todo {
     id: string;
     text: string;
     completed: boolean;
