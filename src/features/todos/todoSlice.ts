@@ -6,6 +6,7 @@ interface Todo {
     id: string;
     text: string;
     completed: boolean;
+    userId: string;
 }
 
 
@@ -20,23 +21,31 @@ const initialState: TodoState = {
 };
 
 
-export const fetchTodos = createAsyncThunk("todos/fetch", async () =>{
+export const fetchTodos = createAsyncThunk("todos/fetch", async (userId: string) =>{
     const querySnapshot = await getDocs(collection(db, "todos"));
     const data : Todo[] = [];
     querySnapshot.forEach((docSnap)=>{
-        data.push({...(docSnap.data() as Todo), id: docSnap.id});
+        const todo = docSnap.data() as Todo;
+        if(todo.userId === userId){
+            data.push({...todo, id: docSnap.id});
+        }
     });
     return data;
 })
 
 
-export const addTodoDB = createAsyncThunk("todos/add", async (text: string) => {
-    const docRef = await addDoc(collection(db, "todos"), {
+export const addTodoToDB = createAsyncThunk(
+    "todos/add",
+    async ({ text, userId }: { text: string; userId: string }) => {
+      const docRef = await addDoc(collection(db, "todos"), {
         text,
         completed: false,
-    });
-    return {id: docRef.id, text, completed: false};
-})
+        userId,
+      });
+      return { id: docRef.id, text, completed: false, userId };
+    }
+  );
+  
 
 export const toggleTodoDB = createAsyncThunk("todos/toggle", async ({id, completed}: {id: string; completed:boolean}) => {
     await updateDoc(doc(db, "todos", id), {
@@ -50,6 +59,14 @@ export const deleteTodoDB = createAsyncThunk("todos/delete", async(id:string)=>{
     await deleteDoc(doc(db, "todos", id));
     return id;
 })
+
+
+export const editTodoInDB = createAsyncThunk("todos/edit", async ({id, text} : {id: string, text: string}) =>{
+    const todoRef = doc(db, "todos", id);
+    await updateDoc(todoRef, {text});
+    return {id, text};
+})
+
 
 const todoSlice = createSlice({
     name: "todos",
@@ -74,7 +91,7 @@ const todoSlice = createSlice({
         .addCase(fetchTodos.pending, (state) => {
             state.loading = true;
         })
-        .addCase(addTodoDB.fulfilled, (state, action) => {
+        .addCase(addTodoToDB.fulfilled, (state, action) => {
             state.todos.push(action.payload);
         })
         .addCase(toggleTodoDB.fulfilled, (state, action) => {
@@ -83,6 +100,11 @@ const todoSlice = createSlice({
         })
         .addCase(deleteTodoDB.fulfilled, (state, action) => {
             state.todos = state.todos.filter(t => t.id !== action.payload);
+        })
+        .addCase(editTodoInDB.fulfilled, (state,action) => {
+            const {id, text} = action.payload;
+            const todo = state.todos.find(t => t.id === id);
+            if(todo) todo.text = text;
         })
 
     }

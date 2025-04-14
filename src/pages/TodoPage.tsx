@@ -3,13 +3,13 @@ import { RootState } from "../app/store"
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect, useState } from "react";
 import { logout } from "../features/auth/authSlice";
-import { addTodoDB, deleteTodoDB, fetchTodos, toggleTodoDB } from "../features/todos/todoSlice";
+import { addTodoToDB, deleteTodoDB, fetchTodos, toggleTodoDB } from "../features/todos/todoSlice";
 
 export default function TodoPage() {
 
     const [newTodo, setNewTodo] = useState("")
     const {todos, loading} = useSelector((state: RootState) => state.todos);
-
+    
 
     const user = useSelector((state: RootState) => state.auth.user)
     const dispatch = useDispatch();
@@ -22,7 +22,7 @@ export default function TodoPage() {
         }
         else{
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            dispatch(fetchTodos() as any)
+            dispatch(fetchTodos(user) as any)
         }
     }, [user, dispatch, navigate])
 
@@ -34,7 +34,10 @@ export default function TodoPage() {
     const handleAdd = () => {
         if(newTodo.trim()){
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            dispatch(addTodoDB(newTodo) as any)
+            if (user) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                dispatch(addTodoToDB({text: newTodo, userId: user}) as any);
+            }
             setNewTodo("")
         }
     }
