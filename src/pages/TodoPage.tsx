@@ -5,6 +5,11 @@ import { useEffect, useState } from "react";
 import { logout } from "../features/auth/authSlice";
 import { addTodoToDB, deleteTodoDB, editTodoInDB, fetchTodos, toggleTodoDB } from "../features/todos/todoSlice";
 import { Todo } from "../features/todos/todoSlice";
+
+
+import { useTheme } from "../context/ThemeContext";
+import { Moon, Sun } from "react-bootstrap-icons";
+
 export default function TodoPage() {
 
     const [newTodo, setNewTodo] = useState("")
@@ -59,6 +64,7 @@ export default function TodoPage() {
         setEditingTodo(todo);
         setEditingText(todo.text);
         setShowModal(true);
+        console.log(editingTodo, showModal)
     }
 
     const handleSave = () =>{
@@ -75,9 +81,14 @@ export default function TodoPage() {
         setEditingTodo(null);
     }
 
+    const {theme, toggleTheme} = useTheme()
+
 
     return (
         <div className="container mt-4">
+            <div className="d-flex justify-content-end mb-2">
+                <button onClick={toggleTheme} className="btn btn-outline-secondary" title="Toggle Theme">{theme === "dark" ? <Sun/> : <Moon/>}</button>
+            </div>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h3>Hello, {user}</h3>
                 <button className="btn btn-outline-danger" onClick={handleLogout}>
@@ -111,13 +122,13 @@ export default function TodoPage() {
             )
             }
 
-            { editingTodo && showModal && (
-                    <div className={`modal fade ${showModal ? "show d-bloc" : ""}`}
+            { showModal && (
+                    <div className={`modal fade d-flex justify-content-center ${showModal ? "show d-block" : ""}`}
                     tabIndex={-1}
                     role="dialog"
-                    style={{backgroundColor: "rgba(0,0,0,0.5"}}
+                    style={{backgroundColor: "rgba(0,0,0,0.5)"}}
                     >
-                        <div className="modal-dialog" role="document">
+                        <div className="modal-dialog align-content-center w-75" role="document">
                             <div className="modal-content">
                                 <div className="modal-header">
                                     <h5 className="modal-title">Edit Todo</h5>
