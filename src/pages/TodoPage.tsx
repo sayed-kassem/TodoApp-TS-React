@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../app/store"
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect, useState } from "react";
 import { logout } from "../features/auth/authSlice";
-import { addTodoToDB, deleteTodoDB, editTodoInDB, fetchTodos, toggleTodoDB } from "../features/todos/todoSlice";
+import { addTodoToDB, deleteTodoDB, editTodoInDB, fetchTodos, setFilter, toggleTodoDB } from "../features/todos/todoSlice";
 import { Todo } from "../features/todos/todoSlice";
 
 
@@ -14,6 +15,14 @@ export default function TodoPage() {
 
     const [newTodo, setNewTodo] = useState("")
     const {todos, loading} = useSelector((state: RootState) => state.todos);
+
+    const filter = useSelector((state: RootState) => state.todos.filter);
+
+    const filteredTodos = todos.filter((todo)=> {
+        if(filter === "all") return true;
+        if(filter === "active") return !todo.completed;
+        if(filter === "completed") return todo.completed;
+    })
 
     const [showModal, setShowModal] = useState(false);
     const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
@@ -101,17 +110,52 @@ export default function TodoPage() {
                 <button className="btn btn-primary" onClick={handleAdd}>Add</button>
             </div>
 
+            <div className="btn-group mb-3 ">
+                <button
+                onClick={()=> dispatch(setFilter("all"))}
+                className={`btn btn-${filter === "all" ?"primary": "outline-primary"}`}
+                >
+                    All
+                </button>
+
+                <button
+                onClick={()=> dispatch(setFilter("active"))}
+                className={`btn btn-${filter === "active" ?"primary": "outline-primary"}`}
+                >
+                    Active
+                </button>
+
+                <button
+                onClick={()=> dispatch(setFilter("completed"))}
+                className={`btn btn-${filter === "completed" ?"primary": "outline-primary"}`}
+                >
+                    Completed
+                </button>
+
+            </div>
+
             {loading ? (
                 <div className="spinner-border" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div>
             ): (
                 <ul className="list-group">
-                    {todos.map((todo) => (
+                    {filteredTodos.map((todo) => (
                         <li key={todo.id} 
-                            className={`list-group-item d-flex flex-row justify-content-between ${todo.completed} ? "text-decoration-line-through" :""`}>
+                            className={`list-group-item d-flex flex-row justify-content-between align-items-center`}>
                              
-                             <span onClick={()=>handleToggle(todo.id, todo.completed)} style={{cursor:"pointer"}}>{todo.text}</span>
+                             <div className="justify-content-start p">
+                             <input
+                                type="checkbox"
+                                className="form-check-inpu me-2"
+                                id={`todo-${todo.id}`}
+                                checked={todo.completed}
+                                onChange={() => dispatch(toggleTodoDB({id: todo.id, completed: todo.completed})as any)}
+                            />
+                             <span onClick={()=>handleToggle(todo.id, todo.completed)} style={{cursor:"pointer"}} className={`form-check-label ${todo.completed ? "text-decoration-line-through text-muted opacity-50" : ""}`}
+                             >{todo.text}</span>
+                            
+                             </div>
                             <div className="flex-row-reverse">
                             <button className="btn btn-outline-success btn-sm me-2" onClick={()=> handleEdit(todo)}>Edit</button>
                             <button className="btn btn-sm btn-danger" onClick={()=> handleDelete(todo.id)}>Delete</button>

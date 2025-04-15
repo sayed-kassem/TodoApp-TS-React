@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 
@@ -9,15 +9,18 @@ export interface Todo {
     userId: string;
 }
 
+type  FilterType = "all" | "completed" | "active";
 
 interface TodoState {
     todos: Todo[];
     loading: boolean;
+    filter: FilterType
 }
 
 const initialState: TodoState = {
     todos: [],
     loading: false,
+    filter: "all"
 };
 
 
@@ -72,16 +75,9 @@ const todoSlice = createSlice({
     name: "todos",
     initialState,
     reducers: {
-        // addTodo(state, action: PayloadAction<Todo>) {
-        //     state.todos.push(action.payload);
-        // },
-        // toggleTodo(state, action: PayloadAction<string>) {
-        //     const todo = state.todos.find(t => t.id === action.payload);
-        //     if(todo) todo.completed = !todo.completed;
-        // },
-        // removeTodo(state, action: PayloadAction<string>) {
-        //     state.todos = state.todos.filter(t =>t.id !== action.payload);
-        // },
+        setFilter : (state, action: PayloadAction<FilterType>) =>{
+            state.filter = action.payload;
+        }
     },
     extraReducers: (builder) => {
         builder.addCase(fetchTodos.fulfilled, (state, actions) => {
@@ -112,4 +108,5 @@ const todoSlice = createSlice({
 
 
 // export const {addTodo, toggleTodo, removeTodo} = todoSlice.actions;
+export const {setFilter} = todoSlice.actions;
 export default todoSlice.reducer;
