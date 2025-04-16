@@ -17,8 +17,8 @@ export default function LoginPage() {
         try{
             const userCred = await signInWithEmailAndPassword(auth, email, password)
             dispatch(login(userCred.user.email!));
-            console.log("Login Success")
             navigate("/")
+            console.log("Login Success")
 
         }
         catch(err){
